@@ -161,6 +161,7 @@ android {
             }
         }
         multiDexEnabled true
+        missingDimensionStrategy 'react-native-camera', 'general'
     }
 
     if (isNewArchitectureEnabled()) {

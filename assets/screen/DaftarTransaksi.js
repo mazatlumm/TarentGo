@@ -176,7 +176,7 @@ const DaftarTransaksi = ({navigation, route}) => {
                       fontSize: 14
                   }}>Daftar Transaksi</Text>
           </View>
-          <TouchableOpacity style={{justifyContent:'center', alignItems:'center', paddingRight: 10}}>
+          <TouchableOpacity onPress={()=>navigation.navigate('QRScannerTransaksi')} style={{justifyContent:'center', alignItems:'center', paddingRight: 10}}>
             <Icon type='font-awesome' size={25} name='qrcode' color={'black'} />
           </TouchableOpacity>
       </View>
@@ -204,18 +204,16 @@ const DaftarTransaksi = ({navigation, route}) => {
       </View>
       <View style={{height:80, backgroundColor:'#FCFCFC', position: 'absolute', bottom:0, left:0, width:'100%', flexDirection:'row', alignItems:'center', justifyContent:'center'}}>
         <TouchableOpacity onPress={()=>navigation.navigate('Dashboard')} style={{flex:1, alignItems:'center'}}>
-            <Icon type='ionicon' size={25} name='home-sharp' color='violet' />
-            <Text style={{fontFamily:'Inter-Bold', fontSize:10, color:'violet'}}>Home</Text>
+            <Icon type='ionicon' size={25} name='home-sharp' color='#C6C6C6' />
+            <Text style={{fontFamily:'Inter-Bold', fontSize:10, color:'#C6C6C6'}}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={{flex:1, alignItems:'center'}} onPress={()=> navigation.navigate('Kategori')}>
             <Icon type='ionicon' size={25} name='cube-sharp' color='#C6C6C6' />
             <Text style={{fontFamily:'Inter-Bold', fontSize:10, color:'#C6C6C6'}}>Produk</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{flex:1, alignItems:'center', marginBottom:25}} onPress={()=> setModalTambahPesanan(!ModalTambahPesanan)}>
-            <Icon type='ionicon' size={50} name='add-circle-sharp' color='violet' />
-        </TouchableOpacity>
+       
         <TouchableOpacity onPress={()=>navigation.navigate('DaftarTransaksi')} style={{flex:1, alignItems:'center'}}>
-            <Icon type='ionicon' size={25} name='bar-chart-sharp' color='#C6C6C6' />
+            <Icon type='ionicon' size={25} name='bar-chart-sharp' color='violet' />
             <Text style={{fontFamily:'Inter-Bold', fontSize:10, color:'#C6C6C6'}}>Transaksi</Text>
         </TouchableOpacity>
         <TouchableOpacity style={{flex:1, alignItems:'center'}} onPress={()=>navigation.navigate('Profile')}>
@@ -244,7 +242,8 @@ const styles = StyleSheet.create({
     marginVertical:5,
     marginHorizontal:20,
     paddingVertical:10,
-    paddingHorizontal:20
+    paddingHorizontal:20,
+    width:windowWidth-35
   },
   TextBoldNormal:{
     fontFamily:'Inter-Bold',

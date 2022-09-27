@@ -312,7 +312,7 @@ const DetailPesanan = ({navigation, route}) => {
                         + tanggal_transaksi.getSeconds() + " WIB";
                 setTanggalSewa(tanggal_sewa);
 
-
+                setNoHp(response.data.result.no_hp)
                 setHargaSewa(harga_sewa);
                 setLamaSewa(lama_sewa);
                 setDiskon(diskon);
@@ -1021,6 +1021,9 @@ const DetailPesanan = ({navigation, route}) => {
             <ScrollView contentContainerStyle={{marginBottom:150, alignItems:'center', backgroundColor:'#F5F5F5', paddingVertical:10}}>
                 {/* Metode Pembayaran */}
                 <View style={{backgroundColor:'white', borderRadius:10, shadowColor: "#000",shadowOffset: {width: 0, height: 2,},shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, justifyContent:'center', width:windowWidth-40, paddingVertical:20, paddingHorizontal:20, marginTop:5, marginBottom:10}}>
+                    <Text style={{color:'black', fontFamily:'Inter-Bold', fontSize:14}}>Nama : {NamaPenyewa}</Text>
+                    <Text style={{color:'black', fontFamily:'Inter-Bold', fontSize:14}}>No HP : {NoHp}</Text>
+                    <View style={{borderBottomColor:'black', borderBottomWidth:0.5, width:'100%', marginVertical:10}}></View>
                     <View style={{flex:1, flexDirection:'row'}}>
                         <View style={{flex:1}}>
                             <Text style={{color:'black', fontFamily:'Inter-Bold', fontSize:14}}>Metode Pembayaran</Text>

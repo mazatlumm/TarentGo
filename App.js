@@ -13,6 +13,7 @@ import Profile from './assets/screen/Profile';
 import Checkout from './assets/screen/Checkout';
 import DetailPesanan from './assets/screen/DetailPesanan';
 import DaftarTransaksi from './assets/screen/DaftarTransaksi';
+import QRScannerTransaksi from './assets/screen/QRScannerTransaksi';
 
 const Stack = createNativeStackNavigator();
 
@@ -79,6 +80,13 @@ const App = () => {
                 <Stack.Screen
                     name="Profile"
                     component={Profile}
+                    options={{
+                        header: () => null
+                    }}
+                />
+                <Stack.Screen
+                    name="QRScannerTransaksi"
+                    component={QRScannerTransaksi}
                     options={{
                         header: () => null
                     }}
