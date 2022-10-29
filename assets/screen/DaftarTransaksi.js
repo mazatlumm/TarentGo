@@ -55,7 +55,7 @@ const DaftarTransaksi = ({navigation, route}) => {
       console.log('role : ' + Role)
       await axios.get(Url + 'api/transaksi',{
           params: {
-            id_order: IDUser,
+            id_user: IDUser,
             role : Role,
             tanggal_lalu:tanggal_lalu,
             tanggal_selesai:tanggal_selesai,
@@ -184,12 +184,12 @@ const DaftarTransaksi = ({navigation, route}) => {
       <View>
         <View style={styles.Card}>
           <View style={{flexDirection:'row'}}>
-            <Text style={styles.TextNormal}>Cari tanggal : </Text>
-            <TouchableOpacity onPress={()=>AmbilTanggal('mulai')} style={{borderWidth:0.3, borderRadius:10, paddingHorizontal:10, marginLeft:10}}>
+            <Text style={styles.TextNormal}>Tanggal : </Text>
+            <TouchableOpacity onPress={()=>AmbilTanggal('mulai')} style={{borderWidth:0.3, borderRadius:10, paddingHorizontal:10, marginLeft:10, flex:2, alignItems:'center'}}>
               <Text style={styles.TextNormal}>{TanggalMulai}</Text>
             </TouchableOpacity>
             <Text style={styles.TextNormal}> -- </Text>
-            <TouchableOpacity onPress={()=>AmbilTanggal('selesai')} style={{borderWidth:0.3, borderRadius:10, paddingHorizontal:10}}>
+            <TouchableOpacity onPress={()=>AmbilTanggal('selesai')} style={{borderWidth:0.3, borderRadius:10, paddingHorizontal:10, flex:2, alignItems:'center'}}>
               <Text style={styles.TextNormal}>{TanggalSelesai}</Text>
             </TouchableOpacity>
           </View>
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   TextNormal:{
     fontFamily:'Inter-Bold',
-    fontSize:14,
+    fontSize:12,
     color:'black',
   },
   LineBorder:{

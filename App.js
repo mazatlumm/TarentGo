@@ -18,6 +18,7 @@ import QRScannerTransaksi from './assets/screen/QRScannerTransaksi';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+    
     return (
         <NavigationContainer onReady={() => RNBootSplash.hide()}>
             <Stack.Navigator>

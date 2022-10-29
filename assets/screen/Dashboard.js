@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from 'react'
-import { View, Text, Image, TouchableOpacity, Dimensions, ScrollView, Modal, TextInput, FlatList } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Dimensions, ScrollView, Modal, TextInput, FlatList, RefreshControl } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNBootSplash from "react-native-bootsplash";
 import moment from 'moment';
 import axios from 'axios'
+import PushNotificationIOS from "@react-native-community/push-notification-ios";
+import PushNotification from "react-native-push-notification";
 
 import styles from '../style/StyleDashboard'
 import MainStyles from '../style/Main'
@@ -24,7 +26,6 @@ import {
 
 const Dashboard = ({navigation}) => {
 
-
     const [url, seturl] = useState('https://alicestech.com/tarent_outdoor/');
     const [ModalTambahPesanan, setModalTambahPesanan] = useState(false);
     const [NamaPenyewa, setNamaPenyewa] = useState('');
@@ -40,6 +41,64 @@ const Dashboard = ({navigation}) => {
     const [RangeChart, setRangeChart] = useState(true);
     const [TotalPendapatan, setTotalPendapatan] = useState('');
     const [DataTransaksi, setDataTransaksi] = useState([]);
+    const [color, changeColor] = useState('red');
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const AmbilToken = (id_user) => {
+        PushNotification.configure({
+        onRegister: function (token) {
+            console.log("TOKEN:", token.token);
+            KirimToken(id_user, token.token);
+        },
+
+        onNotification: function (notification) {
+            console.log("NOTIFICATION:", notification);
+            notification.finish(PushNotificationIOS.FetchResult.NoData);
+        },
+
+        onAction: function (notification) {
+            console.log("ACTION:", notification.action);
+            console.log("NOTIFICATION:", notification);
+        },
+
+        onRegistrationError: function(err) {
+            console.error(err.message, err);
+        },
+
+        permissions: {
+            alert: true,
+            badge: true,
+            sound: true,
+        },
+        
+        popInitialNotification: true,
+        requestPermissions: true,
+        });
+    }
+
+    const KirimToken = async (id_user, token) => {
+        console.log('kirim token')
+        const SendParams = {
+            id_user: id_user,
+            token: token
+        }
+        await axios.get(url + 'api/token',{
+            params: SendParams
+          })
+        .then(response => {
+            console.log(response);
+            if(response.data.status == true){
+              
+            }else{
+              
+            }
+        })
+        .catch(e => {
+          if (e.response.status == 404) {
+            console.log(e.response.data)
+          }
+        });
+    }
 
     useEffect(() => {
         const init = async () => {
@@ -93,6 +152,8 @@ const Dashboard = ({navigation}) => {
         var Bulan = moment().format('MM')
         setBulan(NamaBulan)
         GetPendapatan(IDUser)
+
+        AmbilToken(IDUser);
     } catch (error) {
         console.error(error);
     }
@@ -233,7 +294,7 @@ const Dashboard = ({navigation}) => {
         var tanggal_selesai = moment().add(1, "days").format('YYYY-MM-D');
 
         const SendParams = {
-            id_order: IDUser,
+            id_user: IDUser,
             role : Role,
             tanggal_lalu:tanggal_lalu,
             tanggal_selesai:tanggal_selesai,
@@ -262,35 +323,33 @@ const Dashboard = ({navigation}) => {
       }
   
       const ItemDaftarTransaksi = ({ id_order, id_user, id_cabang, nama_pemesan, no_hp, jaminan, status, total_harga, status_sewa, updated }) => (
-        <View>
-          <TouchableOpacity onPress={()=>DetailTransaksi(id_order, id_user)} style={{backgroundColor:'#FCFCFC', marginHorizontal:10, padding:10, height:90, borderRadius:20, flexDirection:'row', alignItems:'center', marginBottom:5}}>
-                <View style={{backgroundColor:'#FCEED4', height:60, width:60, borderRadius:20, alignItems:'center', justifyContent:'center'}}>
-                    <Image source={require('../icon/transaction.png')} style={{height:50, width:50}} />
-                </View>
-                <View style={{marginHorizontal:10, width:'100%', paddingRight:80}}>
-                    <View style={{flexDirection:'row'}}>
-                        <View style={{flex:2, alignItems:'flex-start'}}>
-                            <Text style={{color:'black', fontSize:12, fontFamily:'Inter-Bold'}}>ID-ORDER #{id_order+id_user}</Text>
-                        </View>
-                        <View style={{flex:1, alignItems:'flex-end'}}>
-                            <Text style={{color:'green', fontSize:12, fontFamily:'Inter-Bold'}}>{FormatRupiahGo(total_harga)}</Text>
-                        </View>
+        <TouchableOpacity onPress={()=>DetailTransaksi(id_order, id_user)} style={{backgroundColor:'#FCFCFC', marginHorizontal:10, padding:10, height:90, borderRadius:20, flexDirection:'row', alignItems:'center', marginBottom:5}}>
+            <View style={{backgroundColor:'#FCEED4', height:60, width:60, borderRadius:20, alignItems:'center', justifyContent:'center'}}>
+                <Image source={require('../icon/transaction.png')} style={{height:50, width:50}} />
+            </View>
+            <View style={{marginHorizontal:10, width:'100%', paddingRight:80}}>
+                <View style={{flexDirection:'row'}}>
+                    <View style={{flex:2, alignItems:'flex-start'}}>
+                        <Text style={{color:'black', fontSize:12, fontFamily:'Inter-Bold'}}>ID-ORDER #{id_order+id_user}</Text>
                     </View>
-                    <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
-                        <View style={{flex:2, alignItems:'flex-start'}}>
-                            <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>{nama_pemesan}</Text>
-                            <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>No Hp : {no_hp}</Text>
-                            <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>Jaminan : {jaminan}</Text>
-                        </View>
-                        <View style={{flex:1, alignItems:'flex-end'}}>
-                            <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{status_sewa}</Text>
-                            <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{moment(new Date(updated)).format('d-MM-YYYY')}</Text>
-                            <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{moment(new Date(updated)).format('h:mm:ss')} WIB</Text>
-                        </View>
+                    <View style={{flex:1, alignItems:'flex-end'}}>
+                        <Text style={{color:'green', fontSize:12, fontFamily:'Inter-Bold'}}>{FormatRupiahGo(total_harga)}</Text>
                     </View>
                 </View>
-            </TouchableOpacity>
-        </View>
+                <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+                    <View style={{flex:2, alignItems:'flex-start'}}>
+                        <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>{nama_pemesan}</Text>
+                        <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>No Hp : {no_hp}</Text>
+                        <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>Jaminan : {jaminan}</Text>
+                    </View>
+                    <View style={{flex:1, alignItems:'flex-end'}}>
+                        <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{status_sewa}</Text>
+                        <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{moment(new Date(updated)).format('d-MM-YYYY')}</Text>
+                        <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{moment(new Date(updated)).format('h:mm:ss')} WIB</Text>
+                    </View>
+                </View>
+            </View>
+        </TouchableOpacity>
       );
   
     const renderDaftarTransaksi = ({ item }) => (
@@ -307,6 +366,15 @@ const Dashboard = ({navigation}) => {
           updated={item.updated}
       />
     );
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        getDataUser();
+        setTimeout(() => {
+          changeColor('green');
+          setRefreshing(false);
+        }, 2000);
+      };
 
     return (
         <View style={{backgroundColor:'white', position:'relative', flex:1}}>
@@ -500,33 +568,36 @@ const Dashboard = ({navigation}) => {
                 </View>
             </Modal>
 
-            <View>
-                <LinearGradient colors={['#FFF6E5', '#FFFFFF']} style={styles.BoxTopGradient}>
-                    <View style={{marginHorizontal:10, marginTop:10, flexDirection:'row'}}>
-                        <TouchableOpacity onPress={()=>navigation.navigate('Profile')} style={{flex:1, maxWidth:45}}>
-                            <View style={{borderWidth:1, height:40, width:40, borderRadius:20, borderColor:'violet', justifyContent:'center', alignItems:'center'}}>
-                                <Icon type='font-awesome-5' name='user-alt' size={20} color='violet' />
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={()=>setModalBulan(!ModalBulan)} style={{flex:1, alignItems:'center'}}>
-                            <View style={{borderWidth:1, borderRadius:20, borderColor:'grey', paddingHorizontal:10, height:40, justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
-                                <Icon type='font-awesome-5' size={10} color='violet' name='arrow-down'/>
-                                <Text style={{fontFamily:'Inter-Regular', fontSize:12, color:'violet', paddingLeft:10}}>{Bulan + ' ' + moment().format('YYYY')}</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={{flex:1, maxWidth:45, justifyContent:'center'}}>
-                            <Icon type='font-awesome' name='bell' size={30} color='violet' />
-                            <View style={{borderRadius:9, backgroundColor:'red', height:18, width:18, position:'absolute', top:0, right:5, justifyContent:'center', alignItems:'center'}}>
-                                <Text style={{color:'white', fontFamily:'Inter-Bold', fontSize:10}}>1</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{paddingTop:10, alignItems:'center', paddingBottom:10}}>
-                        <Text style={{color:'#91919F', fontFamily:'Inter-Regular', fontSize:12}}>Total Pendapatan</Text>
-                        <Text style={{color:'black', fontFamily:'Inter-Bold', fontSize:25}}>{FormatRupiahGo(TotalPendapatan)}</Text>
-                    </View>
-                </LinearGradient>
-                <Text style={{fontFamily:'Inter-Bold', fontSize:16, color:'black', marginTop:5, marginBottom:10, marginLeft:10 }}>Grafik Saldo</Text>
+            <LinearGradient colors={['#FFF6E5', '#FFFFFF']} style={styles.BoxTopGradient}>
+                <View style={{marginHorizontal:10, marginTop:10, flexDirection:'row'}}>
+                    <TouchableOpacity onPress={()=>navigation.navigate('Profile')} style={{flex:1, maxWidth:45}}>
+                        <View style={{borderWidth:1, height:40, width:40, borderRadius:20, borderColor:'violet', justifyContent:'center', alignItems:'center'}}>
+                            <Icon type='font-awesome-5' name='user-alt' size={20} color='violet' />
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>setModalBulan(!ModalBulan)} style={{flex:1, alignItems:'center'}}>
+                        <View style={{borderWidth:1, borderRadius:20, borderColor:'grey', paddingHorizontal:10, height:40, justifyContent:'center', alignItems:'center', flexDirection:'row'}}>
+                            <Icon type='font-awesome-5' size={10} color='violet' name='arrow-down'/>
+                            <Text style={{fontFamily:'Inter-Regular', fontSize:12, color:'violet', paddingLeft:10}}>{Bulan + ' ' + moment().format('YYYY')}</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{flex:1, maxWidth:45, justifyContent:'center'}}>
+                        <Icon type='font-awesome' name='bell' size={30} color='violet' />
+                        <View style={{borderRadius:9, backgroundColor:'red', height:18, width:18, position:'absolute', top:0, right:5, justifyContent:'center', alignItems:'center'}}>
+                            <Text style={{color:'white', fontFamily:'Inter-Bold', fontSize:10}}>1</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={{paddingTop:10, alignItems:'center', paddingBottom:10}}>
+                    <Text style={{color:'#91919F', fontFamily:'Inter-Regular', fontSize:12}}>Total Pendapatan</Text>
+                    <Text style={{color:'black', fontFamily:'Inter-Bold', fontSize:25}}>{FormatRupiahGo(TotalPendapatan)}</Text>
+                </View>
+            </LinearGradient>
+            <ScrollView refreshControl={
+                <RefreshControl refreshing={refreshing} 
+                onRefresh={onRefresh} />
+            } style={{marginBottom:80}}>
+                <Text style={{fontFamily:'Inter-Bold', fontSize:14, color:'black', marginTop:5, marginBottom:10, marginLeft:10 }}>Grafik Pendapatan</Text>
                 <TouchableOpacity onPress={()=>setRangeChart(!RangeChart)} style={{marginHorizontal:5}}>
                     {RangeChart?
                         <LineChart
@@ -606,23 +677,45 @@ const Dashboard = ({navigation}) => {
                 </TouchableOpacity>
 
                 <View style={{flexDirection:'row', marginHorizontal:10, marginTop:10}}>   
-                    <Text style={{fontFamily:'Inter-Bold', fontSize:16, color:'black', marginTop:5, marginBottom:10, flex:1}}>Transaksi Terakhir</Text>
+                    <Text style={{fontFamily:'Inter-Bold', fontSize:14, color:'black', marginTop:5, marginBottom:10, flex:1}}>Transaksi Terakhir</Text>
                     <TouchableOpacity onPress={()=>navigation.navigate('DaftarTransaksi')} style={{flex:1, alignItems:'flex-end', justifyContent:'center'}}>
-                        <View style={{backgroundColor:'#EEE5FF', borderRadius:10, height:30, width:100 ,padding:5, alignItems:'center'}}>
+                        <View style={{backgroundColor:'#EEE5FF', borderRadius:10, width:100 ,padding:5, alignItems:'center'}}>
                             <Text style={{fontFamily:'Inter-Bold', fontSize:12, color:'violet'}}>Lihat Semua</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
-            </View>
-
-            <View style={{height:270, borderWidth:0}}>
-                <FlatList
-                    data={DataTransaksi}
-                    renderItem={renderDaftarTransaksi}
-                    keyExtractor={item => item.id_order}
-                />
-            </View>
-            
+                {DataTransaksi.map((data_transaksi) => {
+                    return (
+                        <TouchableOpacity key={data_transaksi.id_order} onPress={()=>DetailTransaksi(data_transaksi.id_order, data_transaksi.id_user)} style={{backgroundColor:'#FCFCFC', marginHorizontal:10, padding:10, height:90, borderRadius:20, flexDirection:'row', alignItems:'center', marginBottom:5}}>
+                        <View style={{backgroundColor:'#FCEED4', height:60, width:60, borderRadius:20, alignItems:'center', justifyContent:'center'}}>
+                            <Image source={require('../icon/transaction.png')} style={{height:50, width:50}} />
+                        </View>
+                        <View style={{marginHorizontal:10, width:'100%', paddingRight:80}}>
+                            <View style={{flexDirection:'row'}}>
+                                <View style={{flex:2, alignItems:'flex-start'}}>
+                                    <Text style={{color:'black', fontSize:12, fontFamily:'Inter-Bold'}}>ID-ORDER #{data_transaksi.id_order+data_transaksi.id_user}</Text>
+                                </View>
+                                <View style={{flex:1, alignItems:'flex-end'}}>
+                                    <Text style={{color:'green', fontSize:12, fontFamily:'Inter-Bold'}}>{FormatRupiahGo(data_transaksi.total_harga)}</Text>
+                                </View>
+                            </View>
+                            <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+                                <View style={{flex:2, alignItems:'flex-start'}}>
+                                    <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>{data_transaksi.nama_pemesan}</Text>
+                                    <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>No Hp : {data_transaksi.no_hp}</Text>
+                                    <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Regular'}}>Jaminan : {data_transaksi.jaminan}</Text>
+                                </View>
+                                <View style={{flex:1, alignItems:'flex-end'}}>
+                                    <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{data_transaksi.status_sewa}</Text>
+                                    <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{moment(new Date(data_transaksi.updated)).format('d-MM-YYYY')}</Text>
+                                    <Text style={{color:'black', fontSize:10, fontFamily:'Inter-Bold'}}>{moment(new Date(data_transaksi.updated)).format('h:mm:ss')} WIB</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                    );
+                })}
+            </ScrollView>
             <View style={{height:80, backgroundColor:'#FCFCFC', position: 'absolute', bottom:0, left:0, width:'100%', flexDirection:'row', alignItems:'center', justifyContent:'center'}}>
                 <TouchableOpacity style={{flex:1, alignItems:'center'}}>
                     <Icon type='ionicon' size={25} name='home-sharp' color='violet' />
